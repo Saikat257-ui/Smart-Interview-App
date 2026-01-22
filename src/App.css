@@ -35,20 +35,35 @@
 
 .ant-tabs-tab:hover {
   background: rgba(102, 126, 234, 0.1) !important;
-  transform: translateY(-2px) !important;
 }
 
 
 
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background: linear-gradient(45deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)) !important;
   border: none !important;
   font-weight: 600 !important;
 }
 
-.ant-table-tbody > tr:hover > td {
+/* Fix table flickering on hover */
+
+
+
+
+.ant-table-tbody>tr {
+  transition: none !important;
+}
+
+.ant-table-tbody>tr:hover>td {
   background: rgba(102, 126, 234, 0.05) !important;
 }
+
+.ant-table-cell {
+  transition: none !important;
+}
+
+
+
 
 .ant-input:focus,
 .ant-input-focused {
@@ -63,7 +78,6 @@
 
 .ant-btn-primary:hover {
   background: linear-gradient(45deg, #5a6fd8, #6a4190) !important;
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
 }
 
@@ -81,6 +95,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -107,14 +122,16 @@
   background-clip: text;
 }
 
-/* Smooth transitions */
-* {
-  transition: all 0.3s ease;
+/* Scoped transitions to avoid forcing repaints on every element */
+.ant-tabs-tab,
+.ant-btn,
+.ant-input,
+.ant-card {
+  transition: background-color 0.24s ease, color 0.24s ease, box-shadow 0.24s ease, opacity 0.24s ease;
 }
 
 /* Custom button hover effects */
 .ant-btn:not(.ant-btn-primary):hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -123,7 +140,7 @@
   margin-bottom: 24px !important;
 }
 
-.ant-form-item-label > label {
+.ant-form-item-label>label {
   font-weight: 600 !important;
   color: #333 !important;
   font-size: 16px !important;
@@ -192,7 +209,12 @@
 }
 
 /* Typography improvements */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
 }
 
@@ -207,7 +229,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .ant-popconfirm .ant-popover-inner {
   border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 }
 
 .ant-popconfirm .ant-popover-message {
@@ -223,11 +245,11 @@ h1, h2, h3, h4, h5, h6 {
   .ant-layout-content {
     padding: 16px !important;
   }
-  
+
   .ant-card {
     margin: 0 8px;
   }
-  
+
   .ant-table-wrapper {
     overflow-x: auto;
   }
