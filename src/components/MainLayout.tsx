@@ -47,7 +47,6 @@ const MainLayout: React.FC = () => {
     <Layout style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       <Header style={{
         background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
         padding: '0 32px',
         borderBottom: 'none',
         boxShadow: '0 2px 20px rgba(0,0,0,0.1)',
@@ -89,7 +88,6 @@ const MainLayout: React.FC = () => {
       }}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
           borderRadius: '20px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
           overflow: 'hidden'
