@@ -22,6 +22,8 @@ export interface Answer {
   score?: number;
   difficulty: 'easy' | 'medium' | 'hard';
   timestamp: string;
+  feedback?: string;
+  evaluationMethod?: 'ai' | 'fallback';
 }
 
 export interface Question {
