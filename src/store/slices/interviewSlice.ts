@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { InterviewState, Candidate, Answer, Question } from '../../types';
-import { generateQuestions, calculateScore, generateSummary } from '../../utils/interviewUtils';
+import { generateQuestions, generateSummary } from '../../utils/interviewUtils';
 
 // Validation helpers
 const isValidEmail = (email?: string) => !!email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
