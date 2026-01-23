@@ -99,3 +99,126 @@ Focus on technologies, frameworks, and skills mentioned in the resume. Make ques
     throw new Error('Failed to generate questions from resume content');
   }
 };
+
+export interface AnswerEvaluation {
+  score: number;
+  feedback: string;
+  evaluationMethod: 'ai' | 'fallback';
+}
+
+export const evaluateAnswer = async (
+  question: string,
+  answer: string,
+  difficulty: 'easy' | 'medium' | 'hard',
+  resumeText?: string
+): Promise<AnswerEvaluation> => {
+  // If answer is empty or too short, return low score immediately
+  if (!answer || answer.trim().length < 10) {
+    return {
+      score: 0,
+      feedback: 'Answer is too short or empty. Please provide a more detailed response.',
+      evaluationMethod: 'fallback',
+    };
+  }
+
+  if (!API_KEY) {
+    console.warn('Gemini API key not available, using fallback scoring');
+    return fallbackScoring(answer, difficulty);
+  }
+
+  try {
+    console.log('Evaluating answer with Gemini AI...');
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `
+You are an expert technical interviewer evaluating a candidate's answer to an interview question.
+
+**Question (${difficulty.toUpperCase()} difficulty):**
+${question}
+
+**Candidate's Answer:**
+${answer}
+
+${resumeText ? `**Candidate's Resume Context:**\n${resumeText.substring(0, 500)}...\n` : ''}
+
+Please evaluate this answer based on the following criteria:
+1. **Correctness**: Is the answer technically accurate and factually correct?
+2. **Relevance**: Does the answer directly address the question asked?
+3. **Depth**: Is the explanation thorough and appropriate for a ${difficulty} level question?
+4. **Technical Quality**: Does it demonstrate proper understanding of concepts?
+
+Provide your evaluation in the following JSON format:
+{
+  "score": <number between 0-100>,
+  "feedback": "<2-3 sentences of constructive feedback>"
+}
+
+**Scoring Guidelines:**
+- EASY questions (20s): 80-100 for clear, accurate basics; 60-79 for partial understanding; below 60 for incorrect/incomplete
+- MEDIUM questions (60s): 80-100 for thorough, well-explained answers; 60-79 for good but lacking depth; below 60 for weak/incorrect
+- HARD questions (120s): 80-100 for comprehensive, insightful solutions; 60-79 for decent approach with gaps; below 60 for poor understanding
+
+Be fair but rigorous. Consider the difficulty level and time limit when scoring.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log('Gemini evaluation response:', text);
+
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn('Invalid response format from Gemini, using fallback');
+      return fallbackScoring(answer, difficulty);
+    }
+
+    const evaluation = JSON.parse(jsonMatch[0]);
+    
+    // Validate the response
+    if (typeof evaluation.score !== 'number' || !evaluation.feedback) {
+      console.warn('Invalid evaluation structure, using fallback');
+      return fallbackScoring(answer, difficulty);
+    }
+
+    // Ensure score is within bounds
+    const score = Math.max(0, Math.min(100, Math.round(evaluation.score)));
+
+    return {
+      score,
+      feedback: evaluation.feedback,
+      evaluationMethod: 'ai',
+    };
+  } catch (error) {
+    console.error('Error evaluating answer with Gemini:', error);
+    return fallbackScoring(answer, difficulty);
+  }
+};
+
+// Fallback scoring function (original length-based algorithm)
+const fallbackScoring = (answer: string, difficulty: 'easy' | 'medium' | 'hard'): AnswerEvaluation => {
+  const length = answer.trim().length;
+  let baseScore: number;
+
+  switch (difficulty) {
+    case 'easy':
+      baseScore = length > 50 ? 80 + Math.min((length - 50) * 0.4, 20) : Math.max(length * 1.6, 20);
+      break;
+    case 'medium':
+      baseScore = length > 100 ? 75 + Math.min((length - 100) * 0.25, 25) : Math.max(length * 0.75, 30);
+      break;
+    case 'hard':
+      baseScore = length > 150 ? 70 + Math.min((length - 150) * 0.2, 30) : Math.max(length * 0.47, 25);
+      break;
+    default:
+      baseScore = 50;
+  }
+
+  const score = Math.min(Math.round(baseScore), 100);
+
+  return {
+    score,
+    feedback: 'Answer evaluated based on length and completeness. AI evaluation unavailable.',
+    evaluationMethod: 'fallback',
+  };
+};
