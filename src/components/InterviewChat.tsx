@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Input, Button, Typography, Progress, Tag, Space, Divider } from 'antd';
 import { SendOutlined, ClockCircleOutlined, CheckCircleOutlined, DashboardOutlined, ReloadOutlined, HomeOutlined } from '@ant-design/icons';
 import { useInterviewState, useAppDispatch } from '../store/hooks';
-import { submitAnswer, resetInterview, generateInterviewQuestions } from '../store/slices/interviewSlice';
+import { submitAnswerAsync, resetInterview, generateInterviewQuestions } from '../store/slices/interviewSlice';
 import { useNavigate } from 'react-router-dom';
 import { formatTime } from '../utils/interviewUtils';
 import type { Message } from '../types';
@@ -94,8 +94,8 @@ const InterviewChat: React.FC = () => {
     setIsAnswering(false);
     // Mark this question as submitted to prevent duplicate submissions (timeout vs manual)
     lastSubmittedRef.current = currentQuestionIndex;
-    // Dispatch answer to Redux
-    dispatch(submitAnswer({ answer, timeSpent }));
+    // Dispatch async answer evaluation to Redux
+    dispatch(submitAnswerAsync({ answer, timeSpent }));
     // Do not manually append next-question/completion messages here. The interview reducer
     // updates currentCandidate.currentQuestionIndex which will cause the main effect to
     // append the next question message (idempotently). This prevents duplicate messages
@@ -182,7 +182,7 @@ const InterviewChat: React.FC = () => {
             const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
             lastSubmittedRef.current = currentQuestionIndex;
             setIsAnswering(false);
-            dispatch(submitAnswer({ answer: '', timeSpent }));
+            dispatch(submitAnswerAsync({ answer: '', timeSpent }));
 
             const timeoutMessageId = `timeout-${currentQuestionIndex}`;
             const timeoutMessage: Message = {
